@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+<title>第三章  分页</title>
+<meta name="author" content="13sai" />
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<style>
+    body{padding: 10px 20px;}
+    .center{text-align: center;}
+    p{margin: 20px 0;}
+    img{display: block; margin: 10px; max-width: 500px; max-height: 400px;}
+    pre{padding: 20px; background: #eee;}
+    .red,.red a{color: red;}
+</style>
+</head>
+<body>
+<h1 class="center">第三章  分页</h1>
+<p>
+我们来给前面的文章列表加上。
+</p>
+<p>ci已经为分页写好了类，我们可以直接调用。来看代码：</p>
+<pre>
+class articleController extends CI_Controller {
+
+	public function __construct(){
+        parent::__construct();
+        $this->load->model('articleModel');
+        $this->load->helper('url');//载入url helper
+		$this->load->library('pagination');//载入pagination
+    }
+
+    public function index(){
+		$config['base_url'] = site_url('articleController/index');
+		//$config['uri_segment'] = 1;//地址栏中的第几个参数,默认是第3个
+
+		$config['use_page_numbers'] = true;//使用页码而不是offset
+		$config['total_rows']= $this->articleModel->countArticles('article');//数据总条数
+		$config['per_page']= 6;//每页显示条数
+		$config['page_query_string'] = TRUE;
+
+		$this->pagination->initialize($config);
+		//echo $this->pagination->create_links();//输出分页
+
+		$limit['num'] = $config['per_page'];
+		$page = $this->uri->segment(3);
+		$page = isset($page) ? $page - 1 : 0;
+		//echo $page;
+        $limit['offset'] = $page * $limit['num'];
+        $data['article'] = $this->articleModel->getLimitArticles('article',$limit);
+        
+        $data['title'] = array('id'=>2);
+        $data['arr'] = array('12','10','19','22','20');
+        
+        $this->load->view('header');
+        $this->load->view('index', $data);
+        $this->load->view('footer');
+    }
+}
+</pre>
+<p>这里有一处需要注意，$page = isset($page) ? $page - 1 : 0;ci生成的分页第二页的页数为2，我们查找是从页面数量加1开始查询，所以是$page - 1，这里需要注意一下。</p>
+<p>对应的模型中加入：</p>
+<pre>
+public function countArticles($table){
+    return $this->db->count_all($table);
+}
+
+public function getLimitArticles($table, $arr=array('num'=>FALSE,'offset'=>FALSE)){
+    if(isset($arr['num']) and isset($arr['offset']) and ($arr['num']!==FALSE) and ($arr['offset']!==FALSE))
+    {
+        $query = $this->db->order_by('id','desc')->get($table,$arr['num'],$arr['offset']);
+        return $query->result();
+    }
+    else
+    {
+        return $this->getArticles($table);
+    }
+}
+</pre>
+<p>模板中加入</p>
+<img src="images/3-2/png" alt="">
+<p>这样我们的分页就完成了，看看效果。</p>
+<img src="images/3-1/png" alt="">
+<p>是不是很简单？我们的分页就基本是搞定了。当然，分页配置不可能就这么一点，我直接在分页类里面加了一些设置，所以才有这个分页才有了边框、内边距这些效果。</p>
+<p>我们来仔细分析下分页类的参数：</p>
+<div class="section" id="id5">
+	<h2>自定义分页</h2>
+	<p>
+		下面是所有的参数列表，可以传递给 initialization 方法来定制你喜欢的显示效果。
+	</p>
+	<p>
+		<strong>$config['uri_segment'] = 3;</strong>
+	</p>
+	<p>
+		分页方法自动检测你 URI 的哪一段包含页数，如果你的情况不一样，你可以明确指定它。简单地说，就二十从index.php往后数，页面是第几个参数就写几，我这里是3，所以就是3，或者不写，默认就是3.
+	</p>
+	<p>
+		<strong>$config['num_links'] = 2;</strong>
+	</p>
+	<p>
+		放在你当前页码的前面和后面的“数字”链接的数量。比方说值为 2 就会在每一边放置两个数字链接，
+就像此页顶端的示例链接那样。
+	</p>
+	<p>
+		<strong>$config['use_page_numbers'] = TRUE;</strong>
+	</p>
+	<p>
+		默认分页的 URL 中显示的是你当前正在从哪条记录开始分页，如果你希望显示实际的页数，将该参数设置为 TRUE 。
+	</p>
+	<p>
+		<strong>$config['page_query_string'] = TRUE;</strong>
+	</p>
+	<p>
+		默认情况下，分页类假设你使用 <em>URI 段</em>，并像这样构造你的链接：
+	</p>
+	<blockquote>http://example.com/index.php/test/page/20</blockquote>
+	<p>
+		如果你把 <tt class="docutils literal"><span class="pre">$config['enable_query_strings']</span></tt> 设置为 TRUE，你的链接将自动地被重写成查询字符串格式。
+这个选项也可以被明确地设置，把 
+		<tt class="docutils literal"><span class="pre">$config['page_query_string']</span></tt> 设置为 TRUE，分页链接将变成：
+	</p>
+	<blockquote>http://example.com/index.php?c=test&m=page&per_page=20</blockquote>
+	<p>
+		请注意，"per_page" 是默认传递的查询字符串，但也可以使用 <tt class="docutils literal"><span class="pre">$config['query_string_segment']</span><span class="pre">=</span><span class="pre">'你的字符串'</span></tt>
+来配置。
+	</p>
+	<p>
+		<strong>$config['reuse_query_string'] = FALSE;</strong>
+	</p>
+	<p>
+		默认情况下你的查询字符串参数会被忽略，将这个参数设置为 TRUE ，将会将查询字符串参数添加到 URI 分段的后面
+以及 URL 后缀的前面。:
+	</p>
+	<div class="highlight-ci">
+		<div class="highlight">
+			<pre>http://example.com/index.php/test/page/20?query=search%term</pre>
+		</div>
+	</div>
+	<p>
+		这可以让你混合使用 <em>URI 分段</em>和 查询字符串参数，这在 3.0 之前的版本中是不行的。
+	</p>
+	<p>
+		<strong>$config['prefix'] = '';</strong>
+	</p>
+	<p>
+		给路径添加一个自定义前缀，前缀位于偏移段的前面。
+	</p>
+	<p>
+		<strong>$config['suffix'] = '';</strong>
+	</p>
+	<p>
+		给路径添加一个自定义后缀，后缀位于偏移段的后面。
+	</p>
+	<p>
+		<strong>$config['use_global_url_suffix'] = FALSE;</strong>
+	</p>
+	<p>
+		当该参数设置为 TRUE 时，会使用 <strong>application/config/config.php</strong> 配置文件中定义的 <tt class="docutils literal"><span class="pre">$config['url_suffix']</span></tt> 参数
+		<strong>重写</strong><tt class="docutils literal"><span class="pre">$config['suffix']</span></tt> 的值。
+	</p>
+</div>
+<div class="section" id="id6">
+	<h2>添加封装标签</h2>
+	<p>
+		如果你希望在整个分页的周围用一些标签包起来，你可以通过下面这两个参数：
+	</p>
+	<p>
+		<strong>$config['full_tag_open'] = '&lt;p&gt;';</strong>
+	</p>
+	<p>
+		起始标签放在所有结果的左侧。
+	</p>
+	<p>
+		<strong>$config['full_tag_close'] = '&lt;/p&gt;';</strong>
+	</p>
+	<p>
+		结束标签放在所有结果的右侧。
+	</p>
+</div>
+<div class="section" id="id7">
+	<h2>自定义第一个链接</h2>
+	<p>
+		<strong>$config['first_link'] = 'First';</strong>
+	</p>
+	<p>
+		左边第一个链接显示的文本，如果你不想显示该链接，将其设置为 FALSE 。
+	</p>
+	<div class="admonition note">
+		<p class="first admonition-title">
+			注解
+		</p>
+		<p class="last">
+			该参数的值也可以通过语言文件来翻译。
+		</p>
+	</div>
+	<p>
+		<strong>$config['first_tag_open'] = '&lt;div&gt;';</strong>
+	</p>
+	<p>
+		第一个链接的起始标签。
+	</p>
+	<p>
+		<strong>$config['first_tag_close'] = '&lt;/div&gt;';</strong>
+	</p>
+	<p>
+		第一个链接的结束标签。
+	</p>
+	<p>
+		<strong>$config['first_url'] = '';</strong>
+	</p>
+	<p>
+		可以为第一个链接设置一个自定义的 URL 。
+	</p>
+</div>
+<div class="section" id="id8">
+	<h2>最后一个链接设置把第一个链接first改为last即可。</h2>
+</div>
+<div class="section" id="id9">
+	<h2>自定义下一页链接</h2>
+	<p>
+		<strong>$config['next_link'] = '&amp;gt;';</strong>
+	</p>
+	<p>
+		下一页链接显示的文本，如果你不想显示该链接，将其设置为 FALSE 。
+	</p>
+	<div class="admonition note">
+		<p class="first admonition-title">
+			注解
+		</p>
+		<p class="last">
+			该参数的值也可以通过语言文件来翻译。
+		</p>
+	</div>
+	<p>
+		<strong>$config['next_tag_open'] = '&lt;div&gt;';</strong>
+	</p>
+	<p>
+		下一页链接的起始标签。
+	</p>
+	<p>
+		<strong>$config['next_tag_close'] = '&lt;/div&gt;';</strong>
+	</p>
+	<p>
+		下一页链接的结束标签。
+	</p>
+</div>
+<div class="section" id="id10">
+	<h2>上一页链接把下一页next改为prev即可。</h2>
+</div>
+<div class="section" id="id11">
+	<h2>自定义当前页面链接</h2>
+	<p>
+		<strong>$config['cur_tag_open'] = '&lt;b&gt;';</strong>
+	</p>
+	<p>
+		当前页链接的起始标签。
+	</p>
+	<p>
+		<strong>$config['cur_tag_close'] = '&lt;/b&gt;';</strong>
+	</p>
+	<p>
+		当前页链接的结束标签。
+	</p>
+</div>
+<div class="section" id="id12">
+	<h2>自定义数字链接</h2>
+	<p>
+		<strong>$config['num_tag_open'] = '&lt;li&gt;';</strong>
+	</p>
+	<p>
+		数字链接的起始标签。
+	</p>
+	<p>
+		<strong>$config['num_tag_close'] = '&lt;/li&gt;';</strong>
+	</p>
+	<p>
+		数字链接的结束标签。
+	</p>
+</div>
+<div class="section" id="id13">
+	<h2>隐藏数字链接</h2>
+	<p>
+		如果你不想显示数字链接（例如你只想显示上一页和下一页链接），你可以通过下面的代码来阻止它显示:
+	</p>
+	<div class="highlight-ci">
+		<div class="highlight">
+			<pre><span class="nv">$config</span><span class="p">[</span><span class="s1">'display_pages'</span><span class="p">]</span><span class="o">=</span><span class="k">FALSE</span><span class="p">;</span>
+			</pre>
+		</div>
+	</div>
+</div>
+<div class="section" id="id14">
+	<h2>给链接添加属性</h2>
+	<p>
+		如果你想为分页类生成的每个链接添加额外的属性，你可以通过键值对设置 "attributes" 参数:
+	</p>
+	<div class="highlight-ci">
+		<div class="highlight">
+			<pre><span class="c1">// Produces: class="myclass"</span>
+<span class="nv">$config</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]</span><span class="o">=</span><span class="k">array</span><span class="p">(</span><span class="s1">'class'</span><span class="o">=&gt;</span><span class="s1">'myclass'</span><span class="p">);</span>
+			</pre>
+		</div>
+	</div>
+	<div class="admonition note">
+		<p class="first admonition-title">
+			注解
+		</p>
+		<p class="last">
+			以前的通过 "anchor_class" 参数来设置 class 属性的方法已经废弃。
+		</p>
+	</div>
+</div>
+<div class="section" id="rel">
+	<h2>禁用 "rel" 属性</h2>
+	<p>
+		默认 rel 属性会被自动的被添加到合适的链接上，如果由于某些原因，你想禁用它，你可以用下面的方法：
+	</p>
+	<div class="highlight-ci">
+		<div class="highlight">
+			<pre><span class="nv">$config</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">][</span><span class="s1">'rel'</span><span class="p">]</span><span class="o">=</span><span class="k">FALSE</span><span class="p">;</span>
+			</pre>
+		</div>
+	</div>
+</div>
+</body>
+</html>
