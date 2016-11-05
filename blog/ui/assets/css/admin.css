@@ -1,0 +1,39 @@
+html{width:100%;height:100%}
+body{width:100%;height:100%;font-family:"微软雅黑","Times New Roman"}
+a:link{outline:none;}
+.log{width:100%;height:100%;background:url(../i/f19.jpg) #000 no-repeat;background-size:100% 100%;color:#333}
+@media only screen and (max-width:640px){.log{background-size:180% 100%;background-position:top right}
+.log-title{display:none}
+}
+.log-title{font-size:4rem}
+.log-content{margin-top:15%;text-align:center}
+.log-button{background-color:transparent;border-radius:8px;border:2px solid #fff;display:inline-block;cursor:pointer;color:#fff;text-decoration:none;text-shadow:0 1px 0 #2f6627}
+.log-button:hover{background-color:#0e90d2;border:2px solid #0e90d2;color:#fff}
+.log-button:active{position:relative;top:1px}
+.log-header,.log-re{background-color:transparent;position:absolute;top:0;color:#fff}
+.log-header{display:block;height:50px;width:165px;margin-left:10%;text-indent:-9999px;background-size:125px 24px}
+.log-header:hover{height:50px;width:165px;margin-left:10%;text-indent:-9999px;background-size:125px 24px}
+.log a{color:#fff}
+.log-re{right:10%;top:1%}
+.log-icon{background-color:transparent;color:#fff}
+.log-animation-delay{-webkit-animation-delay:.2s;animation-delay:.2s}
+.log-animation-delay-a{-webkit-animation-delay:.3s;animation-delay:.3s}
+.log-animation-delay-b{-webkit-animation-delay:.5s;animation-delay:.5s}
+.log-alert{clear:both;width:100%;height:28px;line-height:28px;padding-top:0;position:absolute;top:20px;left:0;display:block}
+.log-footer{position:absolute;bottom:10px;width:100%;text-align:center}
+
+.admin-header{background: #666; color: #fff; font-size:1.4rem;margin-bottom:0}
+.admin-header a{color: #fff;}
+.admin-main{background:#f3f3f3;}
+.admin-menu{position:fixed;z-index:10;bottom:30px;right:20px}
+.admin-sidebar{width:200px;min-height:100%;float:left;border-right:1px solid #cecece}
+.admin-sidebar-list{margin-bottom:0}
+.admin-sidebar-list li a{color:#5c5c5c;padding-left:24px}
+.admin-sidebar-list li:first-child{border-top:none}
+.admin-sidebar-sub{margin-top:0;margin-bottom:0;box-shadow:0 16px 8px -15px #e2e2e2 inset;background:#ececec;padding-left:24px}
+.admin-sidebar-sub li:first-child{border-top:1px solid #dedede}
+
+.admin-content{margin-left: 200px; width:auto;background:#fff}
+@media only screen and (max-width: 640px){.admin-content{margin-left: 0;}}
+.admin-content .am-breadcrumb{height: 4.6rem; padding-left: 2rem; opacity: 0.8;-moz-opacity: 0.8; background: #f5f5f5;}
+.admin-content .page-content{padding: 0.5rem 1rem;}
