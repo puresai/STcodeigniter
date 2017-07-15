@@ -5,8 +5,8 @@
 > 自己学习CI过程中写的一个demo，算是一个小教程吧。
 > 由于是初学，难免有错误不足之处，请多指教。
 
-## codeigniter基础教程
-## a simple tutorial about codeigniter
+#### codeigniter基础教程
+#### a simple tutorial about codeigniter
 
 ## 目标：
 用CI搭建一个博客发布平台。
